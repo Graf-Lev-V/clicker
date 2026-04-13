@@ -1,9 +1,9 @@
-export default function Stats({ coins, clickPower, autoCoin }) {
+export default function Stats({ coins, upgrades}) {
     return (
         <>
             <p>Coins: {coins}</p>
-            <p>Click Power: {clickPower}</p>
-            <p>Auto Coin: {autoCoin}</p>
+            <p>Click Power: {upgrades.clickPower}</p>
+            <p>Auto Coins: {upgrades.autoCoins}</p>
         </>
     )
 }
