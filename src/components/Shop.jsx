@@ -1,14 +1,10 @@
-export default function Shop({handleBuy, upgradesCost, coins }) {
+export default function Shop({handleBuy, upgradesCost, coins, upgradeKeyTitle }) {
     return (
         <>
-            <p>Click Power Upgrade</p>
-            <p>Cost: {upgradesCost.clickPower} coins.</p>
-            <button onClick={() => handleBuy("Buy", "clickPower")} disabled={coins < upgradesCost.clickPower}>Buy</button>
-            <button onClick={() => handleBuy("Buy max", "clickPower")} disabled={coins < upgradesCost.clickPower}>Buy max</button>
-            <p>Auto Coins Upgrade</p>
-            <p>Cost: {upgradesCost.autoCoins} coins.</p>
-            <button onClick={() => handleBuy("Buy", "autoCoins")} disabled={coins < upgradesCost.autoCoins}>Buy</button>
-            <button onClick={() => handleBuy("Buy max", "autoCoins")} disabled={coins < upgradesCost.autoCoins}>Buy max</button>
+            <p>{upgradeKeyTitle[1]} Upgrade</p>
+            <p>Cost: {upgradesCost[upgradeKeyTitle[0]]} coins.</p>
+            <button onClick={() => handleBuy("one", upgradeKeyTitle[0])} disabled={coins < upgradesCost[upgradeKeyTitle[0]]}>Buy</button>
+            <button onClick={() => handleBuy("max", upgradeKeyTitle[0])} disabled={coins < upgradesCost[upgradeKeyTitle[0]]}>Buy max</button>
         </>
     )
 }
