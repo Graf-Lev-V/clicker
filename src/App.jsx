@@ -5,15 +5,10 @@ import Shop from "./components/Shop"
 
 //upgrades formulas
 const upgradesFormulas = {
-    clickPower: (clickPowerCost, clickPower) => clickPowerCost + (clickPower * 5),
-    autoCoins: (autoCoinsCost) => Math.floor(autoCoinsCost * 1.5)
+    clickPower: (cost, upgrade) => cost + (upgrade * 5),
+    autoCoins: (cost) => Math.floor(cost * 1.5),
+    coinMultiplier: (cost) => Math.floor(cost * 2)
 }
-
-//shop upgrades
-const shop = [
-  ["clickPower", "Click Power"], 
-  ["autoCoins", "Auto Coins"]
-]
 
 export default function App() {
 
@@ -25,42 +20,76 @@ export default function App() {
     localStorage.getItem("upgrades") ? JSON.parse(localStorage.getItem("upgrades")) :
     {
     clickPower: 1,
-    autoCoins: 0
+    autoCoins: 0,
+    coinMultiplier: 1
   })
 
+  //shop upgrades
+  const shop = [
+    {
+      key: "clickPower", 
+      title: "Click Power",
+      description: "+1 coin per click"
+    }, 
+    {
+      key: "autoCoins", 
+      title: "Auto Coins",
+      description: "+1 coin per second"
+    },
+    {
+      key: "coinMultiplier",
+      title: "Coin Multiplier",
+      description: `x${upgrades.coinMultiplier + 1} coins per click`
+    }
+  ]
+
   //upgrades cost
-  const [upgradesCost, setUpgradesCost] = useState(
-    localStorage.getItem("upgradesCost") ? JSON.parse(localStorage.getItem("upgradesCost")) :
+  const [upgradeCost, setUpgradesCost] = useState(
+    localStorage.getItem("upgradeCost") ? JSON.parse(localStorage.getItem("upgradeCost")) :
     {
     clickPower: 10,
-    autoCoins: 50
+    autoCoins: 50,
+    coinMultiplier: 100
+  })
+
+  //upgrades levels
+  const [upgradeLevel, setUpgradeLevel] = useState(
+    localStorage.getItem("upgradeLevel") ? JSON.parse(localStorage.getItem("upgradeLevel")) :
+    {
+    clickPower: 0,
+    autoCoins: 0,
+    coinMultiplier: 0
   })
 
   //click
   function handleClick() {
-    setCoins((prev) => prev + upgrades.clickPower);
+    setCoins((prev) => prev + (upgrades.clickPower * upgrades.coinMultiplier));
   }
 
   //buy
   function handleBuy(count, upgradeKey) {
-    if (coins >= upgradesCost[upgradeKey]) {
+    if (coins >= upgradeCost[upgradeKey]) {
       if (count === "one") {
-        setCoins(coins - upgradesCost[upgradeKey]);
-        setUpgradesCost({...upgradesCost, [upgradeKey]: upgradesFormulas[upgradeKey](upgradesCost[upgradeKey], upgrades[upgradeKey])});
+        setCoins(coins - upgradeCost[upgradeKey]);
+        setUpgradesCost({...upgradeCost, [upgradeKey]: upgradesFormulas[upgradeKey](upgradeCost[upgradeKey], upgrades[upgradeKey])});
         setUpgrades({...upgrades, [upgradeKey]: upgrades[upgradeKey] + 1});
+        setUpgradeLevel({...upgradeLevel, [upgradeKey]: upgradeLevel[upgradeKey] + 1})
       }
       if (count === "max") {
         let tempUpgrades = upgrades[upgradeKey];
         let tempCoins = coins;
-        let tempUpgradesCost = upgradesCost[upgradeKey];
+        let tempUpgradesCost = upgradeCost[upgradeKey];
+        let tempUpgradeLevel = upgradeLevel[upgradeKey];
         while (tempCoins >= tempUpgradesCost) {
           tempCoins -= tempUpgradesCost;
           tempUpgradesCost = upgradesFormulas[upgradeKey](tempUpgradesCost, tempUpgrades);
           tempUpgrades += 1;
+          tempUpgradeLevel += 1;
         }
         setCoins(tempCoins);
-        setUpgradesCost({...upgradesCost, [upgradeKey]: tempUpgradesCost});
+        setUpgradesCost({...upgradeCost, [upgradeKey]: tempUpgradesCost});
         setUpgrades({...upgrades, [upgradeKey]: tempUpgrades});
+        setUpgradeLevel({...upgradeLevel, [upgradeKey]: tempUpgradeLevel})
       }
     }
   }
@@ -70,13 +99,20 @@ export default function App() {
     localStorage.clear();
     setCoins(0);
     setUpgrades({
-    clickPower: 1,
-    autoCoins: 0
-  })
-    setUpgradesCost( {
-    clickPower: 10,
-    autoCoins: 50
-  })
+      clickPower: 1,
+      autoCoins: 0,
+      coinMultiplier: 1
+    })
+    setUpgradesCost({
+      clickPower: 10,
+      autoCoins: 50,
+      coinMultiplier: 100
+    })
+    setUpgradeLevel({
+      clickPower: 0,
+      autoCoins: 0,
+      coinMultiplier: 0
+    })
   }
 
   //auto coins interval
@@ -88,9 +124,10 @@ export default function App() {
   //local storage
   useEffect(() => {
     localStorage.setItem("coins", coins);
-    localStorage.setItem("upgrades", JSON.stringify(upgrades))
-    localStorage.setItem("upgradesCost", JSON.stringify(upgradesCost))
-  }, [coins, upgrades, upgradesCost])
+    localStorage.setItem("upgrades", JSON.stringify(upgrades));
+    localStorage.setItem("upgradeCost", JSON.stringify(upgradeCost));
+    localStorage.setItem("upgradeLevel", JSON.stringify(upgradeLevel));
+  }, [coins, upgrades, upgradeCost, upgradeLevel])
 
   return (
     <>
@@ -98,12 +135,13 @@ export default function App() {
       <hr/>
       <Stats coins={coins} upgrades={upgrades}/>
       <hr/>
-      {shop.map((upgradeKeyTitle) => <Shop 
-        key={upgradeKeyTitle}
+      {shop.map((upgrade) => <Shop 
+        key={upgrade.key}
         handleBuy={handleBuy}
-        upgradesCost={upgradesCost}
+        upgradeCost={upgradeCost}
         coins={coins}
-        upgradeKeyTitle={upgradeKeyTitle}
+        upgrade={upgrade}
+        upgradeLevel={upgradeLevel}
         />
       )}    
       <hr/>
