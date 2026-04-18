@@ -5,6 +5,7 @@ export default function Stats({ coins, upgrades}) {
             <p>Click Power: {upgrades.clickPower}</p>
             <p>Auto Coins: {upgrades.autoCoins}</p>
             <p>Coin Multiplier: {upgrades.coinMultiplier}</p>
+            <p>Auto Coins Multiplier: {upgrades.autoCoinsMultiplier}</p>
         </>
     )
 }

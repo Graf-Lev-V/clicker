@@ -7,7 +7,9 @@ import Shop from "./components/Shop"
 const upgradesFormulas = {
     clickPower: (cost, upgrade) => cost + (upgrade * 5),
     autoCoins: (cost) => Math.floor(cost * 1.5),
-    coinMultiplier: (cost) => Math.floor(cost * 2)
+    coinMultiplier: (cost) => Math.floor(cost * 2),
+    autoCoinsMultiplier: (cost) => Math.floor(cost * 2),
+    critChance: (cost) => Math.floor(cost * 1.7)
 }
 
 export default function App() {
@@ -21,7 +23,9 @@ export default function App() {
     {
     clickPower: 1,
     autoCoins: 0,
-    coinMultiplier: 1
+    coinMultiplier: 1,
+    autoCoinsMultiplier: 1,
+    critChance: 0
   })
 
   //shop upgrades
@@ -40,6 +44,16 @@ export default function App() {
       key: "coinMultiplier",
       title: "Coin Multiplier",
       description: `x${upgrades.coinMultiplier + 1} coins per click`
+    },
+    {
+      key: "autoCoinsMultiplier",
+      title: "Auto Coins Multiplier",
+      description: `x${upgrades.autoCoinsMultiplier + 1} coins per second`
+    },
+    {
+      key: "critChance",
+      title: "Crit Chance",
+      description: "+5% chance coins doubled per click"
     }
   ]
 
@@ -49,7 +63,9 @@ export default function App() {
     {
     clickPower: 10,
     autoCoins: 50,
-    coinMultiplier: 100
+    coinMultiplier: 100,
+    autoCoinsMultiplier: 200,
+    critChance: 150
   })
 
   //upgrades levels
@@ -58,13 +74,23 @@ export default function App() {
     {
     clickPower: 0,
     autoCoins: 0,
-    coinMultiplier: 0
+    coinMultiplier: 0,
+    autoCoinsMultiplier: 0,
+    critChance: 0
   })
 
   //click
   function handleClick() {
-    setCoins((prev) => prev + (upgrades.clickPower * upgrades.coinMultiplier));
+    let crit = 1;
+    if (Math.floor(Math.random() <= upgrades.critChance)) crit += 1;
+    setCoins((prev) => prev + (upgrades.clickPower * upgrades.coinMultiplier * crit));
   }
+
+  //auto coins 
+  useEffect(() => {
+    const autoClick = setInterval(() => setCoins((prev) => prev + (upgrades.autoCoins * upgrades.autoCoinsMultiplier)), 1000);
+    return () => clearInterval(autoClick);
+  }, [upgrades.autoCoins, upgrades.autoCoinsMultiplier]);
 
   //buy
   function handleBuy(count, upgradeKey) {
@@ -72,7 +98,7 @@ export default function App() {
       if (count === "one") {
         setCoins(coins - upgradeCost[upgradeKey]);
         setUpgradesCost({...upgradeCost, [upgradeKey]: upgradesFormulas[upgradeKey](upgradeCost[upgradeKey], upgrades[upgradeKey])});
-        setUpgrades({...upgrades, [upgradeKey]: upgrades[upgradeKey] + 1});
+        upgradeKey === "critChance" ? setUpgrades({...upgrades, [upgradeKey]: upgrades[upgradeKey] + 0.05}) : setUpgrades({...upgrades, [upgradeKey]: upgrades[upgradeKey] + 1});
         setUpgradeLevel({...upgradeLevel, [upgradeKey]: upgradeLevel[upgradeKey] + 1})
       }
       if (count === "max") {
@@ -83,7 +109,7 @@ export default function App() {
         while (tempCoins >= tempUpgradesCost) {
           tempCoins -= tempUpgradesCost;
           tempUpgradesCost = upgradesFormulas[upgradeKey](tempUpgradesCost, tempUpgrades);
-          tempUpgrades += 1;
+          upgradeKey === "critChance" ? tempUpgrades += 0.05 : tempUpgrades += 1;
           tempUpgradeLevel += 1;
         }
         setCoins(tempCoins);
@@ -101,25 +127,25 @@ export default function App() {
     setUpgrades({
       clickPower: 1,
       autoCoins: 0,
-      coinMultiplier: 1
+      coinMultiplier: 1,
+      autoCoinsMultiplier: 1,
+      critChance: 0
     })
     setUpgradesCost({
       clickPower: 10,
       autoCoins: 50,
-      coinMultiplier: 100
+      coinMultiplier: 100,
+      autoCoinsMultiplier: 200,
+      critChance: 150
     })
     setUpgradeLevel({
       clickPower: 0,
       autoCoins: 0,
-      coinMultiplier: 0
+      coinMultiplier: 0,
+      autoCoinsMultiplier: 0,
+      critChance: 0
     })
   }
-
-  //auto coins interval
-  useEffect(() => {
-    const autoClick = setInterval(() => setCoins((prev) => prev + upgrades.autoCoins), 1000);
-    return () => clearInterval(autoClick);
-  }, [upgrades.autoCoins]);
 
   //local storage
   useEffect(() => {
