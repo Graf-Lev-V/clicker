@@ -3,14 +3,24 @@ import ClickButton from "./components/ClickButton"
 import Stats from "./components/Stats"
 import Shop from "./components/Shop"
 
+//base cost
+const baseCost = {
+  clickPower: 10,
+  autoCoins: 25,
+  coinMultiplier: 70,
+  autoCoinsMultiplier: 140,
+  critChance: 80,
+  critPower: 120
+}
+
 //upgrades formulas
 const upgradesFormulas = {
-    clickPower: (cost, upgrade) => cost + (upgrade * 5),
-    autoCoins: (cost) => Math.floor(cost * 1.5),
-    coinMultiplier: (cost) => Math.floor(cost * 2),
-    autoCoinsMultiplier: (cost) => Math.floor(cost * 2),
-    critChance: (cost) => Math.floor(cost * 1.7),
-    critPower: (cost) => Math.floor(cost * 1.8)
+    clickPower: (level) => Math.floor(baseCost.clickPower * (level + 1) ** 1.3),
+    autoCoins: (level) => Math.floor(baseCost.autoCoins * (level + 1) ** 1.4),
+    coinMultiplier: (level) => Math.floor(baseCost.coinMultiplier * 1.7 ** level),
+    autoCoinsMultiplier: (level) => Math.floor(baseCost.autoCoinsMultiplier * 1.6 ** level),
+    critChance: (level) => Math.floor(baseCost.critChance * 1.5 ** level),
+    critPower: (level) => Math.floor(baseCost.critPower * 1.4 ** level)
 }
 
 export default function App() {
@@ -32,15 +42,7 @@ export default function App() {
 
    //upgrades cost
   const [upgradeCost, setUpgradesCost] = useState(
-    localStorage.getItem("upgradeCost") ? JSON.parse(localStorage.getItem("upgradeCost")) :
-    {
-    clickPower: 10,
-    autoCoins: 50,
-    coinMultiplier: 100,
-    autoCoinsMultiplier: 200,
-    critChance: 150,
-    critPower: 200
-  })
+    localStorage.getItem("upgradeCost") ? JSON.parse(localStorage.getItem("upgradeCost")) : baseCost)
 
   //upgrades levels
   const [upgradeLevel, setUpgradeLevel] = useState(
@@ -86,13 +88,13 @@ export default function App() {
     {
       key: "critPower",
       title: "Crit Power",
-      description: `x${upgrades.critPower} coins multiplied per crit`
+      description: `x${upgrades.critPower + 0.5} coins multiplied per crit`
     }
   ]
 
   //click
   function handleClick() {
-    if (Math.floor(Math.random() <= upgrades.critChance)) {
+    if (Math.random() <= upgrades.critChance) {
       setCrit(true);
       setCoins((prev) => prev + (upgrades.clickPower * upgrades.coinMultiplier * upgrades.critPower))
     } 
@@ -113,7 +115,9 @@ export default function App() {
     if (coins >= upgradeCost[upgradeKey]) {
       if (count === "one") {
         setCoins(coins - upgradeCost[upgradeKey]);
-        setUpgradesCost({...upgradeCost, [upgradeKey]: upgradesFormulas[upgradeKey](upgradeCost[upgradeKey], upgrades[upgradeKey])});
+        setUpgradesCost({...upgradeCost, [upgradeKey]: upgradesFormulas[upgradeKey](upgradeLevel[upgradeKey])});
+
+        console.log(upgradesFormulas[upgradeKey](upgradeLevel[upgradeKey]))
 
         upgradeKey === "critChance" ? 
         setUpgrades({...upgrades, [upgradeKey]: upgrades[upgradeKey] + 0.05}) : 
@@ -130,7 +134,7 @@ export default function App() {
         let tempUpgradeLevel = upgradeLevel[upgradeKey];
         while (tempCoins >= tempUpgradesCost) {
           tempCoins -= tempUpgradesCost;
-          tempUpgradesCost = upgradesFormulas[upgradeKey](tempUpgradesCost, tempUpgrades);
+          tempUpgradesCost = upgradesFormulas[upgradeKey](tempUpgradeLevel);
           
           upgradeKey === "critChance" ? 
           tempUpgrades += 0.05 : 
@@ -160,14 +164,9 @@ export default function App() {
       critChance: 0,
       critPower: 2
     })
-    setUpgradesCost({
-      clickPower: 10,
-      autoCoins: 50,
-      coinMultiplier: 100,
-      autoCoinsMultiplier: 200,
-      critChance: 150,
-      critPower: 200
-    })
+
+    setUpgradesCost(baseCost);
+
     setUpgradeLevel({
       clickPower: 0,
       autoCoins: 0,
@@ -194,6 +193,8 @@ export default function App() {
   return (
     <>
       <ClickButton handleClick={handleClick} upgrades={upgrades} crit={crit}/>
+      <hr/>
+      <p>Coins: {coins}</p>
       <hr/>
       <Stats coins={coins} upgrades={upgrades}/>
       <hr/>
