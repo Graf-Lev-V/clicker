@@ -115,7 +115,7 @@ export default function App() {
     if (coins >= upgradeCost[upgradeKey]) {
       if (count === "one") {
         setCoins(coins - upgradeCost[upgradeKey]);
-        setUpgradesCost({...upgradeCost, [upgradeKey]: upgradesFormulas[upgradeKey](upgradeLevel[upgradeKey])});
+        setUpgradesCost({...upgradeCost, [upgradeKey]: upgradesFormulas[upgradeKey](upgradeLevel[upgradeKey] + 1)});
 
         console.log(upgradesFormulas[upgradeKey](upgradeLevel[upgradeKey]))
 
