@@ -3,24 +3,61 @@ import ClickButton from "./components/ClickButton"
 import Stats from "./components/Stats"
 import Shop from "./components/Shop"
 
-//base cost
-const baseCost = {
-  clickPower: 10,
-  autoCoins: 25,
-  coinMultiplier: 70,
-  autoCoinsMultiplier: 140,
-  critChance: 80,
-  critPower: 120
-}
-
-//upgrades formulas
-const upgradesFormulas = {
-    clickPower: (level) => Math.floor(baseCost.clickPower * (level + 1) ** 1.3),
-    autoCoins: (level) => Math.floor(baseCost.autoCoins * (level + 1) ** 1.4),
-    coinMultiplier: (level) => Math.floor(baseCost.coinMultiplier * 1.7 ** level),
-    autoCoinsMultiplier: (level) => Math.floor(baseCost.autoCoinsMultiplier * 1.6 ** level),
-    critChance: (level) => Math.floor(baseCost.critChance * 1.5 ** level),
-    critPower: (level) => Math.floor(baseCost.critPower * 1.4 ** level)
+const upgradesConfig = {
+  clickPower: {
+    baseCost: 10,
+    nextCost: (level) => Math.floor(10 * (level + 1) ** 1.3),
+    nextUpgrade: (state) => ({...state, clickPower: state.clickPower + 1}),
+    key: "clickPower", 
+    title: "Click Power",
+    description: "+1 coin per click",
+    nextLevel: (state) => ({...state, clickPower: state.clickPower + 1})
+  },
+  autoCoins: {
+    baseCost: 25,
+    nextCost: (level) => Math.floor(25 * (level + 1) ** 1.4),
+    nextUpgrade: (state) => ({...state, autoCoins: state.autoCoins + 1}),
+    key: "autoCoins", 
+    title: "Auto Coins",
+    description: "+1 coin per second",
+    nextLevel: (state) => ({...state, autoCoins: state.autoCoins + 1})
+  },
+  coinMultiplier: {
+    baseCost: 70,
+    nextCost: (level) => Math.floor(70 * 1.7 ** level),
+    nextUpgrade: (state) => ({...state, coinMultiplier: state.coinMultiplier + 1}),
+    key: "coinMultiplier",
+    title: "Coin Multiplier",
+    description: `x2 coins per click`,
+    nextLevel: (state) => ({...state, coinMultiplier: state.coinMultiplier + 1})
+  },
+  autoCoinsMultiplier: {
+    baseCost: 140,
+    nextCost: (level) => Math.floor(140 * 1.6 ** level),
+    nextUpgrade: (state) => ({...state, autoCoinsMultiplier: state.autoCoinsMultiplier + 1}),
+    key: "autoCoinsMultiplier",
+    title: "Auto Coins Multiplier",
+    description: `x2 coins per second`,
+    nextLevel: (state) => ({...state, autoCoinsMultiplier: state.autoCoinsMultiplier + 1})
+  },
+  critChance: {
+    baseCost: 80,
+    nextCost: (level) => Math.floor(80 * 1.5 ** level),
+    nextUpgrade: (state) => ({...state, critChance: state.critChance + 0.05}),
+    key: "critChance",
+    title: "Crit Chance",
+    description: "+5% chance coins multiplied per click",
+    nextLevel: (state) => ({...state, critChance: state.critChance + 1})
+  },
+  critPower: {
+    baseCost: 120,
+    nextCost: (level) => Math.floor(120 * 1.4 ** level),
+    nextUpgrade: (state) => ({...state, critPower: state.critPower + 0.5}),
+    key: "critChance",
+    title: "Crit Chance",
+    description: "+5% chance coins multiplied per click",
+    nextLevel: (state) => ({...state, critPower: state.critPower + 1})
+  }
 }
 
 export default function App() {
@@ -40,10 +77,6 @@ export default function App() {
     critPower: 2
   })
 
-   //upgrades cost
-  const [upgradeCost, setUpgradesCost] = useState(
-    localStorage.getItem("upgradeCost") ? JSON.parse(localStorage.getItem("upgradeCost")) : baseCost)
-
   //upgrades levels
   const [upgradeLevel, setUpgradeLevel] = useState(
     localStorage.getItem("upgradeLevel") ? JSON.parse(localStorage.getItem("upgradeLevel")) :
@@ -56,41 +89,14 @@ export default function App() {
     critPower: 0
   })
 
+  //on crit
   const [crit, setCrit] = useState(false);
 
-  //shop upgrades
-  const shop = [
-    {
-      key: "clickPower", 
-      title: "Click Power",
-      description: "+1 coin per click"
-    }, 
-    {
-      key: "autoCoins", 
-      title: "Auto Coins",
-      description: "+1 coin per second"
-    },
-    {
-      key: "coinMultiplier",
-      title: "Coin Multiplier",
-      description: `x${upgrades.coinMultiplier + 1} coins per click`
-    },
-    {
-      key: "autoCoinsMultiplier",
-      title: "Auto Coins Multiplier",
-      description: `x${upgrades.autoCoinsMultiplier + 1} coins per second`
-    },
-    {
-      key: "critChance",
-      title: "Crit Chance",
-      description: "+5% chance coins multiplied per click"
-    },
-    {
-      key: "critPower",
-      title: "Crit Power",
-      description: `x${upgrades.critPower + 0.5} coins multiplied per crit`
-    }
-  ]
+  //auto coins 
+  useEffect(() => {
+    const autoClick = setInterval(() => setCoins((prev) => prev + (upgrades.autoCoins * upgrades.autoCoinsMultiplier)), 1000);
+    return () => clearInterval(autoClick);
+  }, [upgrades.autoCoins, upgrades.autoCoinsMultiplier]);
 
   //click
   function handleClick() {
@@ -103,12 +109,6 @@ export default function App() {
       setCoins((prev) => prev + (upgrades.clickPower * upgrades.coinMultiplier))
     }
   }
-
-  //auto coins 
-  useEffect(() => {
-    const autoClick = setInterval(() => setCoins((prev) => prev + (upgrades.autoCoins * upgrades.autoCoinsMultiplier)), 1000);
-    return () => clearInterval(autoClick);
-  }, [upgrades.autoCoins, upgrades.autoCoinsMultiplier]);
 
   //buy
   function handleBuy(count, upgradeKey) {
