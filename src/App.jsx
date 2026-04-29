@@ -121,12 +121,25 @@ export default function App() {
     if (coins >= upgradeCost[upgradeKey]) {
       if (count === "one") {
         setCoins(coins - upgradeCost[upgradeKey]);
-        setUpgradeCost({...upgradeCost, [upgradeKey]: upgradesConfig[upgradeKey].nextCost(upgradeLevel[upgradeKey] + 1)});
         setUpgrades(upgradesConfig[upgradeKey].nextUpgrade(upgrades));
+        setUpgradeCost({...upgradeCost, [upgradeKey]: upgradesConfig[upgradeKey].nextCost(upgradeLevel[upgradeKey] + 1)});
         setUpgradeLevel(upgradesConfig[upgradeKey].nextLevel(upgradeLevel));
       }
       if (count === "max") {
-      
+        let tempCoins = coins;
+        let tempCost = upgradeCost[upgradeKey];
+        let tempLevel = upgradeLevel;
+        let tempUpgrade = upgrades;
+        while (tempCost <= tempCoins) {
+          tempCoins -= tempCost;
+          tempCost = upgradesConfig[upgradeKey].nextCost(tempLevel[upgradeKey] + 1);
+          tempLevel = upgradesConfig[upgradeKey].nextLevel(tempLevel);
+          tempUpgrade = upgradesConfig[upgradeKey].nextUpgrade(tempUpgrade);
+        }
+        setCoins(tempCoins);
+        setUpgrades(tempUpgrade);
+        setUpgradeCost({...upgradeCost, [upgradeKey]: tempCost});
+        setUpgradeLevel(tempLevel);
       }
     }
   }
@@ -144,12 +157,12 @@ export default function App() {
       critPower: 2
     });
     setUpgradeCost({ 
-    clickPower: 10, 
-    autoCoins: 25, 
-    coinMultiplier: 70, 
-    autoCoinsMultiplier: 140, 
-    critChance: 80, 
-    critPower: 120 
+      clickPower: 10, 
+      autoCoins: 25, 
+      coinMultiplier: 70, 
+      autoCoinsMultiplier: 140, 
+      critChance: 80, 
+      critPower: 120 
     });
     setUpgradeLevel({
       clickPower: 0,
