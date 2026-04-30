@@ -7,7 +7,7 @@ const upgradesConfig = {
   clickPower: {
     nextCost: (level) => Math.floor(10 * (level + 1) ** 1.3),
     baseValue: 1,
-    nextUpgrade: (level) => 1 + level * 1,
+    getValue: (level) => 1 + level * 1,
     key: "clickPower", 
     title: "Click Power",
     description: "+1 coin per click",
@@ -16,7 +16,7 @@ const upgradesConfig = {
   autoCoins: {
     nextCost: (level) => Math.floor(25 * (level + 1) ** 1.4),
     baseValue: 0,
-    nextUpgrade: (level) => 0 + level * 1,
+    getValue: (level) => 0 + level * 1,
     key: "autoCoins", 
     title: "Auto Coins",
     description: "+1 coin per second",
@@ -25,7 +25,7 @@ const upgradesConfig = {
   coinMultiplier: {
     nextCost: (level) => Math.floor(70 * 1.7 ** level),
     baseValue: 1,
-    nextUpgrade: (level) => 1 + level * 1,
+    getValue: (level) => 1 + level * 1,
     key: "coinMultiplier",
     title: "Coin Multiplier",
     description: `x2 coins per click`,
@@ -34,7 +34,7 @@ const upgradesConfig = {
   autoCoinsMultiplier: {
     nextCost: (level) => Math.floor(140 * 1.6 ** level),
     baseValue: 1,
-    nextUpgrade: (level) => 1 + level * 1,
+    getValue: (level) => 1 + level * 1,
     key: "autoCoinsMultiplier",
     title: "Auto Coins Multiplier",
     description: `x2 coins per second`,
@@ -43,7 +43,7 @@ const upgradesConfig = {
   critChance: {
     nextCost: (level) => Math.floor(80 * 1.5 ** level),
     baseValue: 0,
-    nextUpgrade: (level) => 0 + level * 0.05,
+    getValue: (level) => 0 + level * 0.05,
     key: "critChance",
     title: "Crit Chance",
     description: "+5% chance coins multiplied per click",
@@ -52,7 +52,7 @@ const upgradesConfig = {
   critPower: {
     nextCost: (level) => Math.floor(120 * 1.4 ** level),
     baseValue: 2,
-    nextUpgrade: (level) => 2 + level * 0.5,
+    getValue: (level) => 2 + level * 0.5,
     key: "critPower",
     title: "Crit Power",
     description: "x2 coins multiplied per crit",
@@ -77,34 +77,34 @@ export default function App() {
     critPower: 0
   })
 
-  //on crit
+  //crit
   const [crit, setCrit] = useState(false);
 
   //auto coins 
   useEffect(() => {
     const autoClick = setInterval(() => setCoins((prev) => 
       prev + 
-      (upgradesConfig.autoCoins.nextUpgrade(upgradeLevel.autoCoins) * 
-      upgradesConfig.autoCoinsMultiplier.nextUpgrade(upgradeLevel.autoCoinsMultiplier))), 1000);
+      (upgradesConfig.autoCoins.getValue(upgradeLevel.autoCoins) * 
+      upgradesConfig.autoCoinsMultiplier.getValue(upgradeLevel.autoCoinsMultiplier))), 1000);
     return () => clearInterval(autoClick);
   }, [upgradeLevel.autoCoins, upgradeLevel.autoCoinsMultiplier]);
 
   //click
   function handleClick() {
-    if (Math.random() <= upgradesConfig.critChance.nextUpgrade(upgradeLevel.critChance)) {
+    if (Math.random() <= upgradesConfig.critChance.getValue(upgradeLevel.critChance)) {
       setCrit(true);
       setCoins((prev) => 
         prev + 
-        (upgradesConfig.clickPower.nextUpgrade(upgradeLevel.clickPower) * 
-        upgradesConfig.coinMultiplier.nextUpgrade(upgradeLevel.coinMultiplier) * 
-        upgradesConfig.critPower.nextUpgrade(upgradeLevel.critPower)))
+        (upgradesConfig.clickPower.getValue(upgradeLevel.clickPower) * 
+        upgradesConfig.coinMultiplier.getValue(upgradeLevel.coinMultiplier) * 
+        upgradesConfig.critPower.getValue(upgradeLevel.critPower)))
     } 
     else  {
       setCrit(false);
       setCoins((prev) => 
         prev + 
-        (upgradesConfig.clickPower.nextUpgrade(upgradeLevel.clickPower) * 
-        upgradesConfig.coinMultiplier.nextUpgrade(upgradeLevel.coinMultiplier)))
+        (upgradesConfig.clickPower.getValue(upgradeLevel.clickPower) * 
+        upgradesConfig.coinMultiplier.getValue(upgradeLevel.coinMultiplier)))
     }
   }
 
@@ -121,7 +121,7 @@ export default function App() {
         let tempLevel = {...upgradeLevel};
         while (tempCost <= tempCoins) {
           tempCoins -= tempCost;
-          tempCost = upgradesConfig[upgradeKey].nextCost(tempLevel[upgradeKey] + 1);
+          tempCost = upgradesConfig[upgradeKey].nextCost(tempLevel[upgradeKey]);
           tempLevel = upgradesConfig[upgradeKey].nextLevel(tempLevel);
         }
         setCoins(tempCoins);
@@ -155,27 +155,25 @@ export default function App() {
     localStorage.setItem("upgradeLevel", JSON.stringify(upgradeLevel));
   }, [coins, upgradeLevel])
 
-  
-
   return (
     <>
       <ClickButton 
       handleClick={handleClick} 
-      clickPower={upgradesConfig.clickPower.nextUpgrade(upgradeLevel.clickPower)} 
-      coinMultiplier={upgradesConfig.coinMultiplier.nextUpgrade(upgradeLevel.coinMultiplier)}
-      critPower={upgradesConfig.critPower.nextUpgrade(upgradeLevel.critPower)}
+      clickPower={upgradesConfig.clickPower.getValue(upgradeLevel.clickPower)} 
+      coinMultiplier={upgradesConfig.coinMultiplier.getValue(upgradeLevel.coinMultiplier)}
+      critPower={upgradesConfig.critPower.getValue(upgradeLevel.critPower)}
       crit={crit}/>
       <hr/>
       <p>Coins: {coins}</p>
       <hr/>
       <Stats 
       coins={coins} 
-      clickPower={upgradesConfig.clickPower.nextUpgrade(upgradeLevel.clickPower)} 
-      autoCoins={upgradesConfig.autoCoins.nextUpgrade(upgradeLevel.autoCoins)}
-      coinMultiplier={upgradesConfig.coinMultiplier.nextUpgrade(upgradeLevel.coinMultiplier)}
-      autoCoinsMultiplier={upgradesConfig.autoCoinsMultiplier.nextUpgrade(upgradeLevel.autoCoinsMultiplier)}
-      critChance={upgradesConfig.critChance.nextUpgrade(upgradeLevel.critChance)}
-      critPower={upgradesConfig.critPower.nextUpgrade(upgradeLevel.critPower)}/>
+      clickPower={upgradesConfig.clickPower.getValue(upgradeLevel.clickPower)} 
+      autoCoins={upgradesConfig.autoCoins.getValue(upgradeLevel.autoCoins)}
+      coinMultiplier={upgradesConfig.coinMultiplier.getValue(upgradeLevel.coinMultiplier)}
+      autoCoinsMultiplier={upgradesConfig.autoCoinsMultiplier.getValue(upgradeLevel.autoCoinsMultiplier)}
+      critChance={upgradesConfig.critChance.getValue(upgradeLevel.critChance)}
+      critPower={upgradesConfig.critPower.getValue(upgradeLevel.critPower)}/>
       <hr/>
       {Object.values(upgradesConfig).map((upgrade) => <Shop 
         key={upgrade.key}
