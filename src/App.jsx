@@ -49,20 +49,35 @@ const upgradesConfig = {
 }
 
 export default function App() {
-
   //coins
-  const [coins, setCoins] = useState(Number(localStorage.getItem("coins")) || 0);
+  const [coins, setCoins] = useState(() => {
+    const data = localStorage.getItem("coins");
+    return data ? Number(data) : 0
+  });
 
   //upgrades levels
-  const [upgradeLevel, setUpgradeLevel] = useState(
-    localStorage.getItem("upgradeLevel") ? JSON.parse(localStorage.getItem("upgradeLevel")) :
-    {
-    clickPower: 0,
-    autoCoins: 0,
-    coinMultiplier: 0,
-    autoCoinsMultiplier: 0,
-    critChance: 0,
-    critPower: 0
+  const [upgradeLevel, setUpgradeLevel] = useState(() => {
+    try {
+      const data = localStorage.getItem("upgradeLevel"); return data ? JSON.parse(data) : 
+      {
+        clickPower: 0,
+        autoCoins: 0,
+        coinMultiplier: 0,
+        autoCoinsMultiplier: 0,
+        critChance: 0,
+        critPower: 0
+      }
+    }
+    catch {
+      return {
+        clickPower: 0,
+        autoCoins: 0,
+        coinMultiplier: 0,
+        autoCoinsMultiplier: 0,
+        critChance: 0,
+        critPower: 0
+      }
+    }
   });
 
   //crit
@@ -106,7 +121,7 @@ export default function App() {
           tempCost = upgradesConfig[upgradeKey].nextCost(tempLevel);
         }
         setCoins(tempCoins);
-        setUpgradeLevel({...upgradeLevel, [upgradeKey]: tempLevel});
+        setUpgradeLevel((prev) => ({...prev, [upgradeKey]: tempLevel}));
       }
     }
   }
@@ -122,6 +137,23 @@ export default function App() {
     localStorage.setItem("coins", coins);
     localStorage.setItem("upgradeLevel", JSON.stringify(upgradeLevel));
   }, [coins, upgradeLevel]);
+
+  //debug
+  function handleReset() {
+    localStorage.clear();
+    setCoins(0);
+    setUpgradeLevel({
+      clickPower: 0,
+      autoCoins: 0,
+      coinMultiplier: 0,
+      autoCoinsMultiplier: 0,
+      critChance: 0,
+      critPower: 0
+    });
+  }
+  function manyCoins() {
+    setCoins(1000000000000);
+  }
 
   return (
     <>
@@ -145,17 +177,20 @@ export default function App() {
         critPower={values.critPower}
       />
       <hr/>
-      {Object.entries(upgradesConfig).map((key, upgrade) => <Shop 
+      {Object.entries(upgradesConfig).map(([key, upgrade]) => <Shop 
         key={key}
+        id={key}
         handleBuy={handleBuy}
         upgradeCost={upgradesConfig[key].nextCost(upgradeLevel[key])}
         coins={coins}
         upgrade={upgrade}
-        upgradeLevel={upgradeLevel}
+        upgradeLevel={upgradeLevel[key]}
         />
       )}
-      <hr/>
       
+      <hr/>
+      <button onClick={handleReset}>Reset</button>
+      <button onClick={manyCoins}>Give Coins</button>
     </>
   )
 }

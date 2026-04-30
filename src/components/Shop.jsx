@@ -1,11 +1,11 @@
-export default function Shop({handleBuy, upgradeCost, coins, upgrade, upgradeLevel }) {
+export default function Shop({id, handleBuy, upgradeCost, coins, upgrade, upgradeLevel}) {
     return (
         <>
-            <p>{upgrade.title} Upgrade (Lv. {upgradeLevel[upgrade.key]})</p>
+            <p>{upgrade.title} Upgrade (Lv. {upgradeLevel})</p>
             <p>{upgrade.description}</p>
             <p>Cost: {upgradeCost} coins.</p>
-            <button onClick={() => handleBuy("one", upgrade.key)} disabled={coins < upgradeCost}>Buy</button>
-            <button onClick={() => handleBuy("max", upgrade.key)} disabled={coins < upgradeCost}>Buy max</button>
+            <button onClick={() => handleBuy("one", id)} disabled={coins < upgradeCost}>Buy</button>
+            <button onClick={() => handleBuy("max", id)} disabled={coins < upgradeCost}>Buy max</button>
         </>
     )
 }
