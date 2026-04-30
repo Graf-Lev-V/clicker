@@ -1,7 +1,7 @@
-export default function ClickButton({ handleClick, upgrades, crit }) {
+export default function ClickButton({ handleClick, clickPower, coinMultiplier, critPower, crit }) {
     return (
         crit ?
-        <button onClick={handleClick}>CRIT! +{upgrades.clickPower * upgrades.coinMultiplier * upgrades.critPower}</button> :
-        <button onClick={handleClick}>Click +{upgrades.clickPower * upgrades.coinMultiplier}</button>
+        <button onClick={handleClick}>CRIT! +{clickPower * coinMultiplier * critPower}</button> :
+        <button onClick={handleClick}>Click +{clickPower * coinMultiplier}</button>
     )
 }

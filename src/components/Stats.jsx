@@ -1,12 +1,12 @@
-export default function Stats({ upgrades}) {
+export default function Stats({ clickPower, autoCoins, coinMultiplier, autoCoinsMultiplier, critChance, critPower}) {
     return (
         <>
-            <p>Click Power: {upgrades.clickPower} c/c</p>
-            <p>Auto Coins: {upgrades.autoCoins} c/s</p>
-            <p>Coin Multiplier: {upgrades.coinMultiplier}x</p>
-            <p>Auto Coins Multiplier: {upgrades.autoCoinsMultiplier}x</p>
-            <p>Crit Chance: {upgrades.critChance * 100}%</p>
-            <p>Crit Power: {upgrades.critPower}x</p>
+            <p>Click Power: {clickPower} c/c</p>
+            <p>Auto Coins: {autoCoins} c/s</p>
+            <p>Coin Multiplier: {coinMultiplier}x</p>
+            <p>Auto Coins Multiplier: {autoCoinsMultiplier}x</p>
+            <p>Crit Chance: {critChance * 100}%</p>
+            <p>Crit Power: {critPower}x</p>
         </>
     )
 }
